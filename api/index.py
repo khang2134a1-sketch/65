@@ -1,168 +1,176 @@
-import base64
 import os
-import time
-from flask import Flask, jsonify, render_template, request
-from github import Github
+import json
+import base64
+import requests
+from flask import Flask, render_template, request, jsonify
 
-app = Flask(
-    __name__,
-    template_folder="../templates",
-    static_folder="../static",
-)
-DEFAULT_GITHUB_TOKEN = os.environ.get(
-    "GITHUB_TOKEN", "token_moi_cua_ban_o_day"
-)
+app = Flask(__name__)
 
-def generate_workflow(vps_name: str) -> str:
-  return f"""name: Create VPS ({vps_name})
+# Token dự phòng hệ thống (bạn có thể thay thế bằng token mới của bạn tại đây)
+DEFAULT_GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 */5 * * *'
+def get_auth_token(req=None):
+    if req:
+        custom_token = req.headers.get('X-Github-Token')
+        if custom_token and custom_token.strip():
+            return custom_token.strip()
+    return DEFAULT_GITHUB_TOKEN
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/create', methods=['POST'])
+def create_vps():
+    data = request.json or {}
+    vps_name = data.get('name', 'vps-server')
+    user_token = data.get('token', '').strip()
+    
+    token = user_token if user_token else get_auth_token(request)
+    if not token:
+        return jsonify({"success": False, "error": "Chưa cung cấp GitHub Token hợp lệ!"}), 400
+
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # Lấy thông tin user hiện tại để clone template hoặc tạo repo
+    user_res = requests.get("https://api.github.com/user", headers=headers)
+    if user_res.status_code != 200:
+        return jsonify({"success": False, "error": "Token GitHub không hợp lệ hoặc đã hết hạn!"}), 400
+    
+    username = user_res.json().get("login")
+    repo_name = f"{vps_name.lower().replace(' ', '-')}-{int(os.times()[4]*1000)}"
+
+    # 1. Tạo repository mới từ template hoặc tạo repo trống có sẵn workflow
+    create_repo_data = {
+        "name": repo_name,
+        "description": "VPS Commander Automation Node",
+        "private": True,
+        "auto_init": True
+    }
+    
+    create_res = requests.post("https://api.github.com/user/repos", headers=headers, json=create_repo_data)
+    if create_res.status_code not in [201, 200]:
+        return jsonify({"success": False, "error": f"Không thể tạo kho chứa: {create_res.text}"}), 400
+
+    # 2. Tạo file workflow tự động chạy VPS và Cloudflare Tunnel
+    workflow_content = f"""name: Start VPS Commander
+on: [workflow_dispatch, push]
 jobs:
-  deploy:
-    runs-on: windows-latest
-    permissions:
-      contents: write
-      actions: write
-
+  build:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v4
-      with:
-        token: ${{{{ secrets.GH_TOKEN }}}}
-
-    - name: Cài đặt và chạy TightVNC, noVNC, Cloudflared
-      shell: pwsh
-      run: |
-        try {{
-          Invoke-WebRequest -Uri "https://www.tightvnc.com/download/2.8.63/tightvnc-2.8.63-gpl-setup-64bit.msi" -OutFile "tightvnc-setup.msi"
-          Start-Process msiexec.exe -Wait -ArgumentList '/i tightvnc-setup.msi /quiet /norestart ADDLOCAL="Server" SERVER_REGISTER_AS_SERVICE=1 SET_USEVNCAUTHENTICATION=1 VALUE_OF_USEVNCAUTHENTICATION=1 SET_PASSWORD=1 VALUE_OF_PASSWORD=khang2k13 SET_ACCEPTHTTPCONNECTIONS=1 VALUE_OF_ACCEPTHTTPCONNECTIONS=1'
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup Tmate & Cloudflare
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tmate curl
+          echo "Starting Tmate session..."
+          tmate -F &
+          sleep 10
           
-          Stop-Process -Name "tvnserver" -Force -ErrorAction SilentlyContinue
-          Start-Process -FilePath "C:\\Program Files\\TightVNC\\tvnserver.exe" -ArgumentList "-run -localhost no" -WindowStyle Hidden
-          Start-Sleep -Seconds 10
+          # Lấy link tmate hoặc tạo cloudflare tunnel
+          TMATE_WEB=$(tmate -S /tmp/tmate.sock display -p '#{tmate_web}inspect')
+          echo "Link: $TMATE_WEB"
           
-          Invoke-WebRequest -Uri "https://github.com/novnc/noVNC/archive/refs/tags/v1.4.0.zip" -OutFile "novnc.zip"
-          Expand-Archive -Path "novnc.zip" -DestinationPath "."
+          # Lưu link vào file remote-link.txt để đẩy ngược lại repo
+          git config --global user.name "VPS Commander Bot"
+          git config --global user.email "bot@vps.local"
+          echo "$TMATE_WEB" > remote-link.txt
+          git add remote-link.txt
+          git commit -m "Update VPS active link [skip ci]" || true
+          git push origin HEAD:main || true
           
-          python -m pip install --upgrade pip
-          pip install websockify==0.13.0
-          
-          Start-Process -FilePath "python" -ArgumentList "-m", "websockify", "6080", "127.0.0.1:5900", "--web", "$PWD\\noVNC-1.4.0" -WindowStyle Hidden
-          Start-Sleep -Seconds 5
-          
-          Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
-          Start-Process -FilePath "cloudflared.exe" -ArgumentList "tunnel", "--url", "http://localhost:6080", "--no-autoupdate", "--logfile", "cloudflared.log" -WindowStyle Hidden
-          Start-Sleep -Seconds 20
-          
-          $logContent = Get-Content "cloudflared.log" -Raw -ErrorAction SilentlyContinue
-          if ($logContent -match 'https://[a-zA-Z0-9-]+\\.trycloudflare\\.com') {{
-              $cloudflaredUrl = $matches[0]
-              "$cloudflaredUrl/vnc.html" | Out-File -FilePath "remote-link.txt" -Encoding UTF8 -NoNewline
-              
-              git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-              git config --global user.name "github-actions[bot]"
-              git add remote-link.txt
-              git commit -m "🔗 Update link" --allow-empty
-              git push origin main --force-with-lease
-          }}
-        }} catch {{ }}
-        Start-Sleep -Seconds 17500
+          # Giữ session sống lâu nhất có thể (tối đa 6 tiếng)
+          sleep 21600
 """
 
-
-@app.route("/")
-def index():
-  return render_template("index.html")
-
-
-@app.route("/api/vps", methods=["POST"])
-def get_vps_list():
-  try:
-    data = request.json or {}
-    token = data.get("token", "").strip() or DEFAULT_GITHUB_TOKEN
-    if not token:
-      return jsonify({"success": False, "error": "Thiếu GitHub Token"})
-
-    g = Github(token)
-    user = g.get_user()
-    vps_list = []
-
-    for repo in user.get_repos():
-      if repo.name.startswith("vps-"):
-        link = ""
-        try:
-          file_content = repo.get_contents("remote-link.txt", ref="main")
-          link = (
-              base64.b64decode(file_content.content).decode("utf-8").strip()
-          )
-        except Exception:
-          pass
-
-        vps_list.append({
-            "name": repo.name,
-            "url": repo.html_url,
-            "link": link,
-            "created_at": repo.created_at.timestamp(),
-        })
-
-    return jsonify({"success": True, "vps": vps_list})
-  except Exception as e:
-    return jsonify({"success": False, "error": str(e)})
-
-
-@app.route("/api/create", methods=["POST"])
-def create_vps():
-  try:
-    data = request.json or {}
-    custom_name = data.get("name", "vps").strip().lower()
-    token = data.get("token", "").strip() or DEFAULT_GITHUB_TOKEN
-
-    if not token:
-      return jsonify(
-          {"success": False, "error": "Vui lòng nhập GitHub Token hợp lệ!"}
-      )
-
-    safe_name = "".join(
-        c if c.isalnum() or c == "-" else "-" for c in custom_name
-    )
-    repo_name = f"vps-{safe_name}-{int(time.time())}"
-
-    g = Github(token)
-    user = g.get_user()
-
-    repo = user.create_repo(
-        name=repo_name,
-        private=False,
-        auto_init=True,
-        description=f"VPS Manager: {custom_name}",
-    )
-    time.sleep(3)
-
-    repo.create_secret("GH_TOKEN", token)
-    repo.create_file(
-        ".github/workflows/tmate.yml",
-        "Add workflow",
-        generate_workflow(repo_name),
-        branch="main",
+    workflow_payload = {
+        "message": "Add automated workflow for VPS",
+        "content": base64.b64encode(workflow_content.encode()).decode(),
+        "branch": "main"
+    }
+    
+    # Tạo thư mục .github/workflows và đẩy file workflow lên
+    requests.put(
+        f"https://api.github.com/repos/{username}/{repo_name}/contents/.github/workflows/vps.yml",
+        headers=headers,
+        json=workflow_payload
     )
 
-    try:
-      workflow = repo.get_workflow("tmate.yml")
-      workflow.create_dispatch("main")
-    except Exception:
-      pass
+    # 3. Kích hoạt Workflow Dispatch thủ công để chạy ngay lập tức
+    requests.post(
+        f"https://api.github.com/repos/{username}/{repo_name}/actions/workflows/vps.yml/dispatches",
+        headers=headers,
+        json={"ref": "main"}
+    )
 
     return jsonify({
-        "success": True,
+        "success": True, 
         "message": f"Khởi tạo thành công VPS: {repo_name}",
+        "repo": repo_name
     })
-  except Exception as e:
-    return jsonify({"success": False, "error": str(e)})
 
+@app.route('/api/vps', methods=['GET'])
+def list_vps():
+    token = get_auth_token(request)
+    if not token:
+        return jsonify({"success": True, "vps": []})
 
-if __name__ == "__main__":
-  app.run()
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    user_res = requests.get("https://api.github.com/user", headers=headers)
+    if user_res.status_code != 200:
+        return jsonify({"success": True, "vps": []})
+    
+    username = user_res.json().get("login")
+    
+    # Lấy danh sách các repo của user
+    repos_res = requests.get(f"https://api.github.com/users/{username}/repos?per_page=100", headers=headers)
+    if repos_res.status_code != 200:
+        return jsonify({"success": True, "vps": []})
+
+    vps_list = []
+    for repo in repos_res.json():
+        if repo['name'].startswith(('vps-', 'windows-', 'server-')) or 'vps' in repo['name']:
+            repo_name = repo['name']
+            created_at = repo['created_at']
+            
+            # Chuyển đổi thời gian tạo sang timestamp
+            import datetime
+            try:
+                dt = datetime.datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%SZ")
+                created_timestamp = dt.timestamp()
+            except:
+                created_timestamp = 0
+
+            # Kiểm tra xem repo có file remote-link.txt chứa link VNC hay không
+            link_res = requests.get(f"https://api.github.com/repos/{username}/{repo_name}/contents/remote-link.txt", headers=headers)
+            vnc_link = ""
+            if link_res.status_code == 200:
+                try:
+                    file_data = link_res.json()
+                    decoded_content = base64.b64decode(file_data['content']).decode('utf-8').strip()
+                    if decoded_content.startswith("http"):
+                        vnc_link = decoded_content
+                except:
+                    pass
+
+            vps_list.append({
+                "name": repo_name,
+                "url": repo['html_url'],
+                "link": vnc_link,
+                "created_at": created_timestamp
+            })
+
+    return jsonify({"success": True, "vps": vps_list})
+
+if __name__ == '__main__':
+    app.run(debug=True)

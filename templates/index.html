@@ -3,116 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPS Commander Dashboard by MHL_ATP6</title>
+    <title>VPS Commander Pro by MHL_ATP6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-6px); }
         }
         .animate-float { animation: float 4s ease-in-out infinite; }
         .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(16px);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .glow-effect:hover {
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.25);
-            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.5);
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.6); }
     </style>
 </head>
-<body class="bg-[#030712] text-slate-100 min-h-screen relative overflow-x-hidden">
-    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+<body class="bg-[#030712] text-slate-100 min-h-screen relative overflow-x-hidden custom-scrollbar">
+    <!-- Hiệu ứng nền trang trí lung linh -->
+    <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
+    <!-- Header Điều Hướng -->
     <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-800/80 shadow-2xl">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-extrabold text-lg shadow-lg shadow-blue-500/30 animate-float">
+        <div class="flex items-center space-x-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center font-extrabold text-xl shadow-xl shadow-blue-500/25 animate-float">
                 ⚡
             </div>
             <div>
-                <h1 class="text-lg font-bold bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">VPS Commander</h1>
-                <p class="text-xs text-slate-400 font-medium tracking-wide">Quản lý GitHub Actions <span class="text-blue-400 font-semibold">by MHL_ATP6</span></p>
+                <h1 class="text-base sm:text-lg font-extrabold bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">VPS Commander Pro</h1>
+                <p class="text-[11px] text-slate-400 font-medium tracking-wide">Hệ thống quản lý GitHub Actions <span class="text-blue-400 font-semibold">by MHL_ATP6</span></p>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <div class="hidden md:flex items-center gap-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl">
-                <span class="text-xs text-slate-400">Token:</span>
-                <input type="password" id="global-token" placeholder="Dán token tùy chỉnh..." onchange="saveToken(this.value)" class="bg-transparent text-xs text-slate-200 focus:outline-none w-36 font-mono">
+            <div class="hidden lg:flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 px-3.5 py-2 rounded-xl shadow-inner">
+                <span class="text-xs text-slate-400 font-medium">Token:</span>
+                <input type="password" id="global-token" placeholder="Dán token tùy chỉnh..." onchange="saveToken(this.value)" class="bg-transparent text-xs text-slate-200 focus:outline-none w-40 font-mono">
             </div>
-            <button onclick="openModal()" class="group relative px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 active:scale-95 flex items-center gap-2 overflow-hidden">
-                <span class="absolute inset-0 bg-white/25 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+            <button onclick="openModal()" class="group relative px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 flex items-center gap-2 overflow-hidden">
+                <span class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
                 <span class="relative">➕ Thêm VPS Mới</span>
             </button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-6 relative z-10 pb-24">
+    <!-- Khu Vực Nội Dung Chính -->
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 relative z-10 pb-28">
+        <!-- Bảng thống kê nhỏ trên cùng -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Tổng số VPS</p>
+                    <h3 id="stat-total" class="text-2xl font-black text-blue-400 mt-0.5">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-lg">💻</div>
+            </div>
+            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Đang hoạt động</p>
+                    <h3 id="stat-active" class="text-2xl font-black text-emerald-400 mt-0.5">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg">🟢</div>
+            </div>
+            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Trạng thái kết nối</p>
+                    <h3 class="text-sm font-bold text-indigo-300 mt-1 flex items-center gap-2">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Sẵn sàng
+                    </h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-lg">🛰️</div>
+            </div>
+        </div>
+
+        <!-- Lưới danh sách VPS -->
         <div id="vps-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
         
-        <div id="empty-state" class="text-center py-32 hidden transition-all duration-500 transform scale-95 opacity-0">
-            <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-3xl shadow-xl">
+        <!-- Trạng thái trống (Chưa có VPS nào) -->
+        <div id="empty-state" class="text-center py-28 hidden transition-all duration-500 transform scale-95 opacity-0">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-3xl shadow-xl animate-float">
                 🛰️
             </div>
-            <h3 class="text-xl font-bold text-slate-300 mb-1">Chưa có trạm VPS nào</h3>
-            <p class="text-slate-500 text-sm max-w-sm mx-auto">Hãy nhập token GitHub và bấm "Thêm VPS Mới" để tạo máy chủ.</p>
+            <h3 class="text-xl font-bold text-slate-300 mb-1">Chưa có trạm VPS nào được kích hoạt</h3>
+            <p class="text-slate-500 text-sm max-w-sm mx-auto mb-6">Hãy nhập token GitHub và bấm "Thêm VPS Mới" để bắt đầu khởi tạo máy chủ riêng của bạn.</p>
+            <button onclick="openModal()" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition shadow-lg shadow-blue-500/30">Tạo Ngay Trạm Đầu Tiên</button>
         </div>
     </main>
 
-    <!-- Góc Đo Mạng Thực Tế -->
-    <div class="fixed bottom-6 left-6 z-40 glass-panel p-3.5 rounded-2xl shadow-2xl shadow-black/50 border border-slate-700/50 flex flex-col gap-2.5 hover:border-blue-500/50 transition-colors duration-300 backdrop-blur-xl">
-        <div class="flex items-center justify-between gap-4">
+    <!-- Góc Đo Mạng Thực Tế (Góc Trái Màn Hình) -->
+    <div class="fixed bottom-6 left-6 z-40 glass-panel p-4 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/50 flex flex-col gap-3 hover:border-blue-500/50 transition-all duration-300 backdrop-blur-xl group">
+        <div class="flex items-center justify-between gap-6">
             <div class="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
                 <span class="relative flex h-2.5 w-2.5">
-                    <span id="net-ping-dot" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span id="net-status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
-                <span>Kiểm Tra Mạng (Fast Style)</span>
+                <span>Kiểm Tra Mạng Trực Tuyến</span>
             </div>
-            <button onclick="measureRealSpeed()" class="text-[10px] text-blue-400 hover:text-blue-300 underline bg-blue-500/10 px-2 py-0.5 rounded transition">Đo lại</button>
+            <button onclick="measureRealSpeed()" class="text-[10px] text-blue-400 hover:text-blue-300 underline bg-blue-500/10 px-2.5 py-1 rounded-lg transition active:scale-95">Đo lại</button>
         </div>
-        <div class="flex gap-5">
+        <div class="flex gap-6 items-center">
             <div>
                 <div class="text-slate-500 text-[10px] uppercase font-semibold mb-0.5">Độ trễ (Ping)</div>
-                <div class="text-emerald-400 font-mono font-bold text-sm tracking-tight" id="net-ping">... ms</div>
+                <div class="text-emerald-400 font-mono font-black text-sm tracking-tight" id="net-ping">... ms</div>
             </div>
-            <div class="w-px bg-slate-800/80"></div>
+            <div class="w-px h-8 bg-slate-800"></div>
             <div>
                 <div class="text-slate-500 text-[10px] uppercase font-semibold mb-0.5">Tốc độ thực tế</div>
-                <div class="text-blue-400 font-mono font-bold text-sm tracking-tight" id="net-speed">Đang đo...</div>
+                <div class="text-blue-400 font-mono font-black text-sm tracking-tight" id="net-speed">Đang đo...</div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Thêm VPS -->
+    <!-- Modal Thêm VPS Mới -->
     <div id="vps-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300 px-4">
         <div class="glass-panel rounded-3xl w-full max-w-md p-7 shadow-2xl transform scale-95 transition-transform duration-300 border border-slate-700/50" id="modal-box">
             <div class="flex justify-between items-center mb-5">
-                <h2 class="text-xl font-bold flex items-center gap-2 text-slate-100">🚀 Khởi Tạo VPS Mới</h2>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800/80 transition">✕</button>
+                <h2 class="text-lg font-bold flex items-center gap-2 text-slate-100">🚀 Khởi Tạo VPS Commander Mới</h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800/80 transition text-sm">✕</button>
             </div>
             <form id="vps-form" onsubmit="createNewVPS(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">GitHub Token (Cá nhân của bạn)</label>
                     <input type="password" id="modal-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 font-mono">
-                    <p class="text-[10px] text-slate-500 mt-1">Để trống nếu muốn dùng token mặc định của hệ thống.</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Để trống nếu muốn sử dụng token mặc định của hệ thống.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tên định danh VPS</label>
                     <input type="text" id="vps-name-input" required class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 font-mono shadow-inner" placeholder="Ví dụ: windows-server-01">
                 </div>
                 <div class="flex justify-end space-x-3 pt-3">
-                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm transition">Hủy</button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm transition shadow-lg shadow-blue-600/30">Tạo & Kích Hoạt</button>
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition">Hủy</button>
+                    <button type="submit" id="submit-btn" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm transition shadow-lg shadow-blue-600/30">Tạo & Kích Hoạt</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Javascript Xử Lý Tương Tác Full -->
     <script>
+        // Đo tốc độ mạng thực tế
         async function measureRealSpeed() {
             const pingEl = document.getElementById('net-ping');
             const speedEl = document.getElementById('net-speed');
@@ -171,12 +210,16 @@
 
         async function createNewVPS(e) {
             e.preventDefault();
-            const name = document.getElementById('vps-name-input').value.trim();
+            const nameInput = document.getElementById('vps-name-input');
+            const submitBtn = document.getElementById('submit-btn');
+            const name = nameInput.value.trim();
             const tokenInput = document.getElementById('modal-token-input').value.trim();
             if (tokenInput) saveToken(tokenInput);
             
             if (!name) return;
-            alert("Đang gửi yêu cầu khởi tạo kho lưu trữ và chạy workflow lên GitHub...");
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Đang khởi tạo...";
+
             try {
                 let res = await fetch('/api/create', {
                     method: 'POST',
@@ -187,35 +230,60 @@
                 if (result.success) {
                     alert(result.message);
                     closeModal();
-                    fetchVPSListFromGitHub();
-                } else { alert("Lỗi: " + result.error); }
-            } catch (err) { alert("Lỗi kết nối server!"); }
+                    
+                    // Cơ chế quét lặp lại (retry) tự động sau khi tạo thành công
+                    setTimeout(() => fetchVPSListFromGitHub(), 3000);
+                    setTimeout(() => fetchVPSListFromGitHub(), 7000);
+                    setTimeout(() => fetchVPSListFromGitHub(), 12000);
+                } else { 
+                    alert("Lỗi: " + result.error); 
+                }
+            } catch (err) { 
+                alert("Lỗi kết nối server!"); 
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Tạo & Kích Hoạt";
+            }
         }
 
-        function formatTimeRemaining(createdAt) {
+        // Tính toán thời gian hoạt động và thời gian sống còn lại của VPS (Chu kỳ Actions 5 tiếng = 18000s)
+        function formatTimes(createdAt) {
+            const now = Date.now() / 1000;
+            const elapsed = Math.max(0, Math.floor(now - createdAt));
+            
+            // Thời gian đã chạy định dạng (giờ:phút:giây)
+            let eH = Math.floor(elapsed / 3600);
+            let eM = Math.floor((elapsed % 3600) / 60);
+            let eS = Math.floor(elapsed % 60);
+            let timeRunStr = `${eH.toString().padStart(2, '0')}:${eM.toString().padStart(2, '0')}:${eS.toString().padStart(2, '0')}`;
+
+            // Thời gian sống còn lại (5 tiếng)
             const cycleSeconds = 18000;
-            const remaining = cycleSeconds - (Date.now() / 1000 - createdAt);
-            if (remaining <= 0) return "Đang gia hạn...";
-            let hours = Math.floor(remaining / 3600);
-            let minutes = Math.floor((remaining % 3600) / 60);
-            let seconds = Math.floor(remaining % 60);
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const remaining = cycleSeconds - elapsed;
+            if (remaining <= 0) return { run: timeRunStr, remain: "Đang gia hạn..." };
+            
+            let rH = Math.floor(remaining / 3600);
+            let rM = Math.floor((remaining % 3600) / 60);
+            let rS = Math.floor(remaining % 60);
+            let timeRemainStr = `${rH.toString().padStart(2, '0')}:${rM.toString().padStart(2, '0')}:${rS.toString().padStart(2, '0')}`;
+
+            return { run: timeRunStr, remain: timeRemainStr };
         }
 
         async function fetchVPSListFromGitHub() {
             try {
                 let headers = { 'Content-Type': 'application/json' };
                 let currentToken = getToken();
-                if (currentToken) {
-                    headers['X-Github-Token'] = currentToken;
-                }
+                if (currentToken) headers['X-Github-Token'] = currentToken;
 
-                let res = await fetch('/api/vps', {
-                    method: 'GET',
-                    headers: headers
-                });
+                let res = await fetch('/api/vps', { method: 'GET', headers: headers });
                 let data = await res.json();
-                if (data.success) renderVPS(data.vps);
+                if (data.success) {
+                    renderVPS(data.vps);
+                    document.getElementById('stat-total').innerText = data.vps.length;
+                    let activeCount = data.vps.filter(v => v.link).length;
+                    document.getElementById('stat-active').innerText = activeCount;
+                }
             } catch (err) { console.error(err); }
         }
 
@@ -228,44 +296,49 @@
                 emptyState.classList.remove('hidden');
                 setTimeout(() => emptyState.classList.remove('scale-95', 'opacity-0'), 50);
                 return;
-            } else { emptyState.classList.add('hidden', 'scale-95', 'opacity-0'); }
+            } else { 
+                emptyState.classList.add('hidden', 'scale-95', 'opacity-0'); 
+            }
 
             vpsList.forEach((vps, index) => {
                 const card = document.createElement('div');
                 card.className = "vps-card glass-panel rounded-2xl overflow-hidden shadow-2xl flex flex-col transition-all duration-300 transform hover:-translate-y-1 glow-effect opacity-0 translate-y-4";
                 
                 let iframeContent = vps.link ? `<iframe src="${vps.link}" class="w-full h-full border-0" allowfullscreen></iframe>` : 
-                    `<div class="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
-                        <div class="animate-spin h-6 w-6 border-2 border-slate-600 border-t-blue-500 rounded-full mb-3"></div>
-                        <span class="text-xs font-medium tracking-wider animate-pulse">ĐANG CÀI ĐẶT VNC & CLOUDFLARE...</span>
+                    `<div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm text-slate-400">
+                        <div class="animate-spin h-8 w-8 border-3 border-slate-700 border-t-blue-500 rounded-full mb-3 shadow-lg shadow-blue-500/20"></div>
+                        <span class="text-xs font-bold tracking-wider animate-pulse text-blue-400">ĐANG CÀI ĐẶT VNC & CLOUDFLARE...</span>
+                        <span class="text-[10px] text-slate-500 mt-1">Vui lòng chờ khoảng 30-60 giây để GitHub chạy hoàn tất</span>
                     </div>`;
 
-                let linkBadge = vps.link ? `<a href="${vps.link}" target="_blank" class="text-[11px] font-mono text-blue-400 hover:underline truncate block max-w-[220px]">${vps.link}</a>` : 
-                    `<span class="text-[11px] text-yellow-400 animate-pulse font-medium">Đang khởi tạo / Chờ lấy link...</span>`;
+                let linkBadge = vps.link ? `<a href="${vps.link}" target="_blank" class="text-[11px] font-mono text-blue-400 hover:text-blue-300 hover:underline truncate block max-w-[220px]">${vps.link}</a>` : 
+                    `<span class="text-[11px] text-yellow-400 animate-pulse font-medium">Đang khởi tạo / Chờ link...</span>`;
 
-                let timeLeft = formatTimeRemaining(vps.created_at || (Date.now() / 1000));
+                let createdTs = vps.created_at || (Date.now() / 1000);
+                let times = formatTimes(createdTs);
 
                 card.innerHTML = `
-                    <div class="px-5 py-3.5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/60 backdrop-blur">
+                    <div class="px-5 py-3.5 border-b border-slate-800/80 flex justify-between items-center bg-slate-900/70 backdrop-blur">
                         <div class="flex items-center gap-3 overflow-hidden">
                             <span class="relative flex h-3 w-3 flex-shrink-0">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                              <span class="${vps.link ? 'bg-emerald-400' : 'bg-yellow-400'} animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
+                              <span class="${vps.link ? 'bg-emerald-500' : 'bg-yellow-500'} relative inline-flex rounded-full h-3 w-3"></span>
                             </span>
                             <div class="truncate">
                                 <h3 class="font-bold text-sm text-slate-100 tracking-wide truncate flex items-center gap-2">
                                     ${vps.name} 
-                                    <span class="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-mono">⏳ Còn: <span class="countdown-timer" data-created="${vps.created_at || Date.now() / 1000}">${timeLeft}</span></span>
+                                    <span class="text-[10px] bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-mono">⏳ Còn lại: <span class="countdown-timer" data-created="${createdTs}">${times.remain}</span></span>
                                 </h3>
                                 ${linkBadge}
                             </div>
                         </div>
                         <div class="flex items-center gap-2 flex-shrink-0">
-                            ${vps.link ? `<a href="${vps.link}" target="_blank" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl text-[11px] font-semibold transition flex items-center gap-1 border border-slate-700/40 hover:border-blue-500/50">Mở To ↗</a>` : ''}
-                            <a href="${vps.url}" target="_blank" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition" title="Xem Repository">📂</a>
+                            <span class="hidden sm:inline-block text-[10px] text-slate-400 bg-slate-800/80 border border-slate-700/50 px-2 py-1 rounded-lg font-mono">⏱️ Đã chạy: <span class="uptime-timer" data-created="${createdTs}">${times.run}</span></span>
+                            ${vps.link ? `<a href="${vps.link}" target="_blank" class="bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white px-3 py-1.5 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border border-blue-500/30 shadow">Mở To ↗</a>` : ''}
+                            <a href="${vps.url}" target="_blank" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition text-sm" title="Xem Repository trên GitHub">📂</a>
                         </div>
                     </div>
-                    <div class="relative w-full h-[460px] bg-[#09090b]">
+                    <div class="relative w-full h-[480px] bg-[#09090b] overflow-hidden">
                         ${iframeContent}
                     </div>
                 `;
@@ -274,12 +347,19 @@
             });
         }
 
+        // Cập nhật bộ đếm thời gian thực mỗi giây cho tất cả thẻ VPS đang hiển thị
         setInterval(() => {
             document.querySelectorAll('.countdown-timer').forEach(el => {
-                el.innerText = formatTimeRemaining(parseFloat(el.getAttribute('data-created')));
+                let ts = parseFloat(el.getAttribute('data-created'));
+                el.innerText = formatTimes(ts).remain;
+            });
+            document.querySelectorAll('.uptime-timer').forEach(el => {
+                let ts = parseFloat(el.getAttribute('data-created'));
+                el.innerText = formatTimes(ts).run;
             });
         }, 1000);
 
+        // Tự động quét lại danh sách VPS định kỳ mỗi 15 giây
         setInterval(fetchVPSListFromGitHub, 15000);
     </script>
 </body>

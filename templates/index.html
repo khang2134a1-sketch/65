@@ -9,14 +9,14 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .glass-panel {
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
 <body class="bg-[#030712] text-slate-100 min-h-screen">
-    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-800/80">
+    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-800/80 shadow-lg">
         <div class="flex items-center space-x-3">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-500/30">
                 ⚡
@@ -25,6 +25,12 @@
                 <h1 class="text-base font-extrabold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">VPS Commander Pro</h1>
                 <p class="text-[11px] text-slate-400">Hệ thống quản lý chuyên nghiệp</p>
             </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <input type="password" id="global-token" placeholder="GitHub Token..." onchange="saveToken(this.value)" class="bg-slate-900 border border-slate-800 text-xs px-3 py-2 rounded-xl text-slate-200 w-36 focus:outline-none">
+            <button onclick="openModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-lg shadow-blue-500/30">
+                + Thêm VPS Mới
+            </button>
         </div>
     </header>
 
@@ -38,20 +44,100 @@
                 <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800/60 text-slate-300 font-semibold text-sm">
                     💻 Quản lý Trạm VPS
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800/60 text-slate-300 font-semibold text-sm">
-                    ⚙️ Cấu hình GitHub Token
-                </a>
             </div>
 
-            <div class="lg:col-span-2 glass-panel p-6 rounded-2xl space-y-6">
-                <h2 class="text-lg font-bold text-slate-200">Trạng thái hoạt động</h2>
-                <p class="text-sm text-slate-400">Hệ thống đang ở trạng thái sẵn sàng kết nối. Không có lỗi ngoại lệ nào được ghi nhận trên máy chủ.</p>
-                <div class="bg-slate-950/80 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-300 h-48 overflow-y-auto space-y-1">
-                    <div class="text-emerald-400">[OK] Server initialization complete without internal errors.</div>
-                    <div class="text-slate-400">[INFO] Ready for deployment requests.</div>
+            <div class="lg:col-span-2 glass-panel p-6 rounded-2xl space-y-4">
+                <h2 class="text-lg font-bold text-slate-200">Danh sách Tiến trình VPS</h2>
+                <div id="vps-list-container" class="space-y-3">
+                    <p class="text-slate-500 text-xs italic">Đang tải dữ liệu từ GitHub Actions...</p>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Modal Tạo VPS -->
+    <div id="vps-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="glass-panel rounded-3xl w-full max-w-md p-6 border border-slate-700 space-y-4">
+            <h2 class="text-base font-bold text-slate-100">🚀 Tạo Trạm VPS Mới</h2>
+            <input type="text" id="vps-name-input" placeholder="Tên VPS (Ví dụ: vps-01)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Hủy</button>
+                <button onclick="createNewVPS()" id="submit-btn" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg">Xác Nhận Tạo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getToken() { return localStorage.getItem('custom_gh_token') || document.getElementById('global-token').value.trim(); }
+        function saveToken(val) { localStorage.setItem('custom_gh_token', val.trim()); fetchVPS(); }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('custom_gh_token');
+            if (saved) { document.getElementById('global-token').value = saved; }
+            fetchVPS();
+        });
+
+        function openModal() { document.getElementById('vps-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('vps-modal').classList.add('hidden'); }
+
+        async function createNewVPS() {
+            const name = document.getElementById('vps-name-input').value.trim();
+            const btn = document.getElementById('submit-btn');
+            if (!name) return alert("Vui lòng nhập tên VPS!");
+            
+            btn.innerText = "Đang gửi...";
+            btn.disabled = true;
+
+            try {
+                let res = await fetch('/api/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, token: getToken() })
+                });
+                let data = await res.json();
+                if (data.success) {
+                    alert(data.message);
+                    closeModal();
+                    fetchVPS();
+                } else {
+                    alert("Lỗi: " + data.error);
+                }
+            } catch(err) {
+                alert("Lỗi kết nối!");
+            } finally {
+                btn.innerText = "Xác Nhận Tạo";
+                btn.disabled = false;
+            }
+        }
+
+        async function fetchVPS() {
+            try {
+                let headers = { 'Content-Type': 'application/json' };
+                let token = getToken();
+                if (token) headers['X-Github-Token'] = token;
+
+                let res = await fetch('/api/vps', { headers });
+                let data = await res.json();
+                if (data.success) {
+                    const container = document.getElementById('vps-list-container');
+                    if (data.vps.length === 0) {
+                        container.innerHTML = `<p class="text-slate-500 text-xs">Chưa có tiến trình nào hoạt động.</p>`;
+                        return;
+                    }
+                    container.innerHTML = data.vps.map(v => `
+                        <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-200">${v.name}</h4>
+                                <span class="text-[10px] text-slate-400 font-mono">Trạng thái: <strong class="${v.conclusion === 'success' ? 'text-emerald-400' : 'text-yellow-400'}">${v.conclusion || v.status}</strong></span>
+                            </div>
+                            <a href="${v.url}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition">Xem GitHub ↗</a>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        setInterval(fetchVPS, 15000); // Cập nhật ngầm mỗi 15 giây không làm giật màn hình
+    </script>
 </body>
 </html>

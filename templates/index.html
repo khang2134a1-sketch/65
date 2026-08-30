@@ -13,67 +13,187 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
+        .menu-item:hover { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
     </style>
 </head>
 <body class="bg-[#030712] text-slate-100 min-h-screen">
-    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-800/80 shadow-lg">
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-800/80 shadow-2xl">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-500/30">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-500/30">
                 ⚡
             </div>
             <div>
-                <h1 class="text-base font-extrabold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">VPS Commander Pro</h1>
-                <p class="text-[11px] text-slate-400">Hệ thống quản lý chuyên nghiệp</p>
+                <h1 class="text-base font-extrabold bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">VPS Commander Pro</h1>
+                <p class="text-[11px] text-slate-400">Hệ thống quản lý trung tâm cao cấp</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <input type="password" id="global-token" placeholder="GitHub Token..." onchange="saveToken(this.value)" class="bg-slate-900 border border-slate-800 text-xs px-3 py-2 rounded-xl text-slate-200 w-36 focus:outline-none">
-            <button onclick="openModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-lg shadow-blue-500/30">
-                + Thêm VPS Mới
+            <button onclick="openModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition shadow-lg shadow-blue-500/30">
+                ➕ Thêm VPS Mới
             </button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="glass-panel p-5 rounded-2xl space-y-3 h-fit">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Menu Điều Hướng</h2>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/20 text-blue-300 border border-blue-500/30 font-semibold text-sm">
-                    📊 Tổng quan hệ thống
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800/60 text-slate-300 font-semibold text-sm">
-                    💻 Quản lý Trạm VPS
-                </a>
+    <!-- Nội dung chính chia layout Menu Đẹp -->
+    <main class="max-w-7xl mx-auto p-4 sm:p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Menu Điều Hướng Trái -->
+            <div class="space-y-3">
+                <div class="glass-panel p-4 rounded-2xl space-y-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 mb-3">Menu Hệ Thống</h2>
+                    <a href="#" onclick="switchTab('overview', this)" class="menu-item active flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/20 text-blue-300 border border-blue-500/40 font-semibold text-xs transition">
+                        📊 Tổng Quan Trạm
+                    </a>
+                    <a href="#" onclick="switchTab('nodes', this)" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 border border-transparent font-semibold text-xs transition">
+                        💻 Danh Sách VPS
+                    </a>
+                    <a href="#" onclick="switchTab('settings', this)" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 border border-transparent font-semibold text-xs transition">
+                        ⚙️ Cấu Hình Token & API
+                    </a>
+                    <a href="#" onclick="switchTab('logs', this)" class="menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 border border-transparent font-semibold text-xs transition">
+                        📜 Nhật Ký Hoạt Động
+                    </a>
+                </div>
+
+                <!-- Thẻ Tóm Tắt Trạng Thái Token -->
+                <div class="glass-panel p-4 rounded-2xl space-y-2">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase">Chế Độ Token</h3>
+                    <div id="token-status-badge" class="text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-xl">
+                        Đang dùng: Token mặc định hệ thống
+                    </div>
+                </div>
             </div>
 
-            <div class="lg:col-span-2 glass-panel p-6 rounded-2xl space-y-4">
-                <h2 class="text-lg font-bold text-slate-200">Danh sách Tiến trình VPS</h2>
-                <div id="vps-list-container" class="space-y-3">
-                    <p class="text-slate-500 text-xs italic">Đang tải dữ liệu từ GitHub Actions...</p>
+            <!-- Khu Vực Hiển Thị Nội Dung Theo Tab -->
+            <div class="lg:col-span-3 space-y-6">
+                
+                <!-- Tab 1 & 2: Tổng quan & Danh sách VPS -->
+                <div id="tab-content" class="glass-panel p-6 rounded-2xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">🚀 Tiến Trình Trạm VPS Trực Tuyến</h2>
+                        <button onclick="fetchVPS()" class="text-xs text-blue-400 hover:text-blue-300 bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20 transition">Làm mới 🔄</button>
+                    </div>
+                    <div id="vps-list-container" class="space-y-3">
+                        <p class="text-slate-500 text-xs italic">Đang đồng bộ dữ liệu từ GitHub Actions...</p>
+                    </div>
                 </div>
+
+                <!-- Tab Cấu Hình Token -->
+                <div id="tab-settings" class="glass-panel p-6 rounded-2xl space-y-4 hidden">
+                    <h2 class="text-base font-bold text-slate-100 mb-2">⚙️ Lựa Chọn Nguồn Token GitHub</h2>
+                    <p class="text-xs text-slate-400 mb-4">Bạn có thể dùng token mặc định tích hợp sẵn hoặc nhập token cá nhân của riêng bạn để vượt giới hạn rate-limit.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 bg-slate-950/60 p-4 rounded-xl border border-slate-800 cursor-pointer" onclick="selectTokenType('default')">
+                            <input type="radio" name="token_mode" id="mode-default" checked class="accent-blue-600">
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-200">Sử dụng Token Mặc Định Hệ Thống</h4>
+                                <p class="text-[11px] text-slate-400">Không cần cấu hình gì thêm, dùng token sẵn có trên server.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 bg-slate-950/60 p-4 rounded-xl border border-slate-800 cursor-pointer" onclick="selectTokenType('custom')">
+                            <input type="radio" name="token_mode" id="mode-custom" class="accent-blue-600">
+                            <div class="w-full">
+                                <h4 class="text-xs font-bold text-slate-200">Sử Dụng Token Cá Nhân Của Bạn</h4>
+                                <p class="text-[11px] text-slate-400 mb-2">Nhập Personal Access Token (PAT) có quyền repo/workflow.</p>
+                                <input type="password" id="custom-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono" oninput="saveCustomToken(this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Logs -->
+                <div id="tab-logs" class="glass-panel p-6 rounded-2xl space-y-4 hidden">
+                    <h2 class="text-base font-bold text-slate-100">📜 Nhật Ký Hệ Thống</h2>
+                    <div class="bg-slate-950/80 rounded-xl p-4 border border-slate-800 font-mono text-xs text-slate-300 h-64 overflow-y-auto space-y-1">
+                        <div class="text-emerald-400">[SYSTEM] Dashboard UI initialized successfully.</div>
+                        <div class="text-blue-400">[READY] Awaiting user actions for workflow dispatch.</div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
 
     <!-- Modal Tạo VPS -->
-    <div id="vps-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="glass-panel rounded-3xl w-full max-w-md p-6 border border-slate-700 space-y-4">
-            <h2 class="text-base font-bold text-slate-100">🚀 Tạo Trạm VPS Mới</h2>
-            <input type="text" id="vps-name-input" placeholder="Tên VPS (Ví dụ: vps-01)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+    <div id="vps-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden px-4">
+        <div class="glass-panel rounded-3xl w-full max-w-md p-6 border border-slate-700/60 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-slate-100">🚀 Khởi Tạo Trạm VPS Mới</h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <div>
+                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Tên Định Danh VPS</label>
+                <input type="text" id="vps-name-input" placeholder="Ví dụ: my-vps-node-01" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
+            </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Hủy</button>
-                <button onclick="createNewVPS()" id="submit-btn" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg">Xác Nhận Tạo</button>
+                <button onclick="createNewVPS()" id="submit-btn" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg">Gửi Lệnh Tạo</button>
             </div>
         </div>
     </div>
 
+    <!-- Script Xử Lý Giao Diện & API -->
     <script>
-        function getToken() { return localStorage.getItem('custom_gh_token') || document.getElementById('global-token').value.trim(); }
-        function saveToken(val) { localStorage.setItem('custom_gh_token', val.trim()); fetchVPS(); }
-        
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.menu-item').forEach(m => {
+                m.classList.remove('bg-blue-600/20', 'text-blue-300', 'border-blue-500/40');
+                m.classList.add('text-slate-300', 'border-transparent');
+            });
+            el.classList.add('bg-blue-600/20', 'text-blue-300', 'border-blue-500/40');
+            el.classList.remove('text-slate-300', 'border-transparent');
+
+            document.getElementById('tab-content').classList.add('hidden');
+            document.getElementById('tab-settings').classList.add('hidden');
+            document.getElementById('tab-logs').classList.add('hidden');
+
+            if(tabName === 'overview' || tabName === 'nodes') {
+                document.getElementById('tab-content').classList.remove('hidden');
+                fetchVPS();
+            } else if(tabName === 'settings') {
+                document.getElementById('tab-settings').classList.remove('hidden');
+            } else if(tabName === 'logs') {
+                document.getElementById('tab-logs').classList.remove('hidden');
+            }
+        }
+
+        function getTokenConfig() {
+            const mode = localStorage.getItem('token_mode') || 'default';
+            const customToken = localStorage.getItem('custom_gh_token') || '';
+            return { mode, customToken };
+        }
+
+        function selectTokenType(mode) {
+            document.getElementById('mode-default').checked = (mode === 'default');
+            document.getElementById('mode-custom').checked = (mode === 'custom');
+            localStorage.setItem('token_mode', mode);
+            
+            const badge = document.getElementById('token-status-badge');
+            if(mode === 'custom') {
+                badge.innerText = "Đang dùng: Token cá nhân của bạn";
+                badge.className = "text-xs font-mono text-blue-400 bg-blue-500/10 border border-blue-500/20 p-2.5 rounded-xl";
+            } else {
+                badge.innerText = "Đang dùng: Token mặc định hệ thống";
+                badge.className = "text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-xl";
+            }
+            fetchVPS();
+        }
+
+        function saveCustomToken(val) {
+            localStorage.setItem('custom_gh_token', val.trim());
+            selectTokenType('custom');
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('custom_gh_token');
-            if (saved) { document.getElementById('global-token').value = saved; }
+            const config = getTokenConfig();
+            if(config.mode === 'custom') {
+                document.getElementById('mode-custom').checked = true;
+                if(config.customToken) document.getElementById('custom-token-input').value = config.customToken;
+                selectTokenType('custom');
+            }
             fetchVPS();
         });
 
@@ -85,6 +205,7 @@
             const btn = document.getElementById('submit-btn');
             if (!name) return alert("Vui lòng nhập tên VPS!");
             
+            const config = getTokenConfig();
             btn.innerText = "Đang gửi...";
             btn.disabled = true;
 
@@ -92,7 +213,11 @@
                 let res = await fetch('/api/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: name, token: getToken() })
+                    body: JSON.stringify({ 
+                        name: name, 
+                        token_type: config.mode,
+                        token: config.customToken 
+                    })
                 });
                 let data = await res.json();
                 if (data.success) {
@@ -103,31 +228,34 @@
                     alert("Lỗi: " + data.error);
                 }
             } catch(err) {
-                alert("Lỗi kết nối!");
+                alert("Lỗi kết nối máy chủ!");
             } finally {
-                btn.innerText = "Xác Nhận Tạo";
+                btn.innerText = "Gửi Lệnh Tạo";
                 btn.disabled = false;
             }
         }
 
         async function fetchVPS() {
             try {
-                let headers = { 'Content-Type': 'application/json' };
-                let token = getToken();
-                if (token) headers['X-Github-Token'] = token;
+                const config = getTokenConfig();
+                let headers = { 
+                    'Content-Type': 'application/json',
+                    'X-Token-Type': config.mode,
+                    'X-Github-Token': config.customToken
+                };
 
                 let res = await fetch('/api/vps', { headers });
                 let data = await res.json();
                 if (data.success) {
                     const container = document.getElementById('vps-list-container');
                     if (data.vps.length === 0) {
-                        container.innerHTML = `<p class="text-slate-500 text-xs">Chưa có tiến trình nào hoạt động.</p>`;
+                        container.innerHTML = `<p class="text-slate-500 text-xs">Chưa có tiến trình nào được kích hoạt hoặc Token chưa hợp lệ.</p>`;
                         return;
                     }
                     container.innerHTML = data.vps.map(v => `
                         <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 flex justify-between items-center">
                             <div>
-                                <h4 class="font-bold text-sm text-slate-200">${v.name}</h4>
+                                <h4 class="font-bold text-xs text-slate-200 mb-1">${v.name}</h4>
                                 <span class="text-[10px] text-slate-400 font-mono">Trạng thái: <strong class="${v.conclusion === 'success' ? 'text-emerald-400' : 'text-yellow-400'}">${v.conclusion || v.status}</strong></span>
                             </div>
                             <a href="${v.url}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition">Xem GitHub ↗</a>
@@ -137,7 +265,7 @@
             } catch(e) { console.error(e); }
         }
 
-        setInterval(fetchVPS, 15000); // Cập nhật ngầm mỗi 15 giây không làm giật màn hình
+        setInterval(fetchVPS, 15000);
     </script>
 </body>
 </html>

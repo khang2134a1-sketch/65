@@ -151,7 +151,6 @@
 
     <!-- Javascript Xử Lý Tương Tác Full -->
     <script>
-        // Đo tốc độ mạng thực tế
         async function measureRealSpeed() {
             const pingEl = document.getElementById('net-ping');
             const speedEl = document.getElementById('net-speed');
@@ -230,8 +229,6 @@
                 if (result.success) {
                     alert(result.message);
                     closeModal();
-                    
-                    // Cơ chế quét lặp lại (retry) tự động sau khi tạo thành công
                     setTimeout(() => fetchVPSListFromGitHub(), 3000);
                     setTimeout(() => fetchVPSListFromGitHub(), 7000);
                     setTimeout(() => fetchVPSListFromGitHub(), 12000);
@@ -246,19 +243,16 @@
             }
         }
 
-        // Tính toán thời gian hoạt động và thời gian sống còn lại của VPS (Chu kỳ Actions 5 tiếng = 18000s)
         function formatTimes(createdAt) {
             const now = Date.now() / 1000;
             const elapsed = Math.max(0, Math.floor(now - createdAt));
             
-            // Thời gian đã chạy định dạng (giờ:phút:giây)
             let eH = Math.floor(elapsed / 3600);
             let eM = Math.floor((elapsed % 3600) / 60);
             let eS = Math.floor(elapsed % 60);
             let timeRunStr = `${eH.toString().padStart(2, '0')}:${eM.toString().padStart(2, '0')}:${eS.toString().padStart(2, '0')}`;
 
-            // Thời gian sống còn lại (5 tiếng)
-            const cycleSeconds = 18000;
+            const cycleSeconds = 18000; // 5 tiếng
             const remaining = cycleSeconds - elapsed;
             if (remaining <= 0) return { run: timeRunStr, remain: "Đang gia hạn..." };
             
@@ -347,7 +341,6 @@
             });
         }
 
-        // Cập nhật bộ đếm thời gian thực mỗi giây cho tất cả thẻ VPS đang hiển thị
         setInterval(() => {
             document.querySelectorAll('.countdown-timer').forEach(el => {
                 let ts = parseFloat(el.getAttribute('data-created'));
@@ -359,7 +352,6 @@
             });
         }, 1000);
 
-        // Tự động quét lại danh sách VPS định kỳ mỗi 15 giây
         setInterval(fetchVPSListFromGitHub, 15000);
     </script>
 </body>
